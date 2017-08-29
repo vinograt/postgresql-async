@@ -119,7 +119,9 @@ class PostgreSQLConnection
     val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
 
-    val holder = this.parsedStatements.getOrElseUpdate(query,
+    val stKey = query + "|" + values.map(value => encoderRegistry.kindOf(value)).mkString(",")
+
+    val holder = this.parsedStatements.getOrElseUpdate(stKey,
       new PreparedStatementHolder( query, preparedStatementsCounter.incrementAndGet ))
 
     if (holder.paramsCount != values.length) {
