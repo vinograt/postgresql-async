@@ -111,7 +111,8 @@ abstract class AbstractURIParser {
       host = properties.getOrElse(HOST, DEFAULT.host),
       port = properties.get(PORT).map(_.toInt).getOrElse(DEFAULT.port),
       ssl = SSLConfiguration(properties),
-      charset = charset
+      charset = charset,
+      currentSchema = properties.get(CURRENT_SCHEMA)
     )
   }
 
@@ -171,5 +172,6 @@ object AbstractURIParser {
   val HOST = "host"
   val USERNAME = "user"
   val PASSWORD = "password"
+  val CURRENT_SCHEMA = "currentSchema"
 }
 

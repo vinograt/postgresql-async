@@ -88,6 +88,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
                """
 
   val select = "select *, oid from type_test_table"
+  val selectSearchPath = "select * from in_search_path_table"
 
   val preparedStatementCreate = """create temp table prepared_statement_test (
     id bigserial not null,
@@ -110,6 +111,14 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           handler.isReadyForQuery must beTrue
       }
 
+    }
+
+    "connect to database and setup search path" in {
+      withHandler(com.github.mauricio.async.db.postgresql.util.URLParser.DEFAULT.copy(currentSchema = Some("test_search_path")), {
+        handler =>
+          val result = executeQuery(handler, this.selectSearchPath)
+          result.rows.get.size === 0
+      })
     }
 
     "create a table in the database" in {

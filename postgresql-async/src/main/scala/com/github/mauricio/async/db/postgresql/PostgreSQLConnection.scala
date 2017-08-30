@@ -92,7 +92,12 @@ class PostgreSQLConnection
       case e => this.connectionFuture.tryFailure(e)
     }
 
-    this.connectionFuture.future
+    this.connectionFuture.future.flatMap { c ⇒
+      configuration.currentSchema match {
+        case Some(cs) ⇒ c.sendQuery(s"SET search_path TO $cs;").map(_ ⇒ c)
+        case _ ⇒ Future.successful(c)
+      }
+    }
   }
 
   override def disconnect: Future[Connection] = this.connectionHandler.disconnect.map( c => this )

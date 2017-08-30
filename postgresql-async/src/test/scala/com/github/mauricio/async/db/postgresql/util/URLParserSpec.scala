@@ -71,6 +71,18 @@ class URLParserSpec extends Specification {
       configuration.port === 9987
     }
 
+    "create a connection with currentSchema parameter" in {
+      val connectionUri = "jdbc:postgresql://128.167.54.90:9987/my_database?currentSchema=test"
+
+      val configuration = parse(connectionUri)
+      configuration.username === DEFAULT.username
+      configuration.password === None
+      configuration.database === Some("my_database")
+      configuration.host === "128.167.54.90"
+      configuration.port === 9987
+      configuration.currentSchema === Some("test")
+    }
+
     //========== postgresql:// ==============
 
     "create a connection from a heroku like URL using 'postgresql' protocol" in {

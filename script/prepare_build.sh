@@ -24,6 +24,8 @@ psql -d "postgres" -c "CREATE USER postgres_md5 WITH PASSWORD 'postgres_md5'; GR
 psql -d "postgres" -c "CREATE USER postgres_cleartext WITH PASSWORD 'postgres_cleartext'; GRANT ALL PRIVILEGES ON DATABASE netty_driver_test to postgres_cleartext;" -U $PGUSER
 psql -d "postgres" -c "CREATE USER postgres_kerberos WITH PASSWORD 'postgres_kerberos'; GRANT ALL PRIVILEGES ON DATABASE netty_driver_test to postgres_kerberos;" -U $PGUSER
 psql -d "netty_driver_test" -c "CREATE TYPE example_mood AS ENUM ('sad', 'ok', 'happy');" -U $PGUSER
+psql -d "postgres" -c 'create schema test_search_path;' -U $PGUSER
+psql -d "postgres" -c 'create table test_search_path.in_search_path_table ( id varchar(255) not null, constraint id_unique primary key (id));' -U $PGUSER
 
 sudo chmod 666 $PGCONF/pg_hba.conf
 
