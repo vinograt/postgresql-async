@@ -56,7 +56,7 @@ trait DatabaseTestHelper {
     withHandler(this.timeTestConfiguration, fn)
   }
 
-  def withSSLHandler[T](mode: SSLConfiguration.Mode.Value, host: String = "localhost", rootCert: Option[File] = Some(new File("script/server.crt")))(fn: (PostgreSQLConnection) => T): T = {
+  def withSSLHandler[T](mode: SSLConfiguration.Mode.Value, host: String = "localhost", rootCert: Option[File] = Some(new File("script/postgresql/server.crt")))(fn: (PostgreSQLConnection) => T): T = {
     val config = new Configuration(
     host = host,
     port = databasePort,

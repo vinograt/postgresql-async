@@ -267,43 +267,6 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     }
 
-    "fail login using kerberos authentication" in {
-
-      val configuration = new Configuration(
-        username = "postgres_kerberos",
-        password = Some("postgres_kerberos"),
-        port = databasePort,
-        database = databaseName
-      )
-
-      withHandler(configuration, {
-        handler =>
-          executeQuery(handler, "SELECT 0")
-      }) must throwAn[UnsupportedAuthenticationMethodException]
-
-    }
-
-    "fail login using with an invalid credential exception" in {
-
-      val configuration = new Configuration(
-        username = "postgres_md5",
-        password = Some("postgres_kerberos"),
-        port = databasePort,
-        database = databaseName
-      )
-      try {
-        withHandler(configuration, {
-          handler =>
-            val result = executeQuery(handler, "SELECT 0")
-            throw new IllegalStateException("should not have arrived")
-        })
-      } catch {
-        case e: GenericDatabaseException =>
-          e.errorMessage.fields(InformationMessage.Routine) === "auth_failed"
-      }
-
-    }
-
     "transaction and flatmap example" in {
 
       val handler: Connection = new PostgreSQLConnection(defaultConfiguration)
