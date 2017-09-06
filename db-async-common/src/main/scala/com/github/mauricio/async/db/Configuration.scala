@@ -51,6 +51,7 @@ object Configuration {
  * @param testTimeout the timeout for connection tests performed by pools
  * @param queryTimeout the optional query timeout
  * @param currentSchema set search schema path
+ * @param isPrepareStatements set using prepared statements flag
  *
  */
 
@@ -66,4 +67,5 @@ case class Configuration(username: String,
                          connectTimeout: Duration = 5.seconds,
                          testTimeout: Duration = 5.seconds,
                          queryTimeout: Option[Duration] = None,
-                         currentSchema: Option[String] = None)
+                         currentSchema: Option[String] = None,
+                         isPrepareStatements: Boolean = true)
