@@ -113,7 +113,7 @@ abstract class AbstractURIParser {
       ssl = SSLConfiguration(properties),
       charset = charset,
       currentSchema = properties.get(CURRENT_SCHEMA),
-      isPrepareStatements = properties.get(PREPARE_THRESHOLD).filter(_ == "0").exists(_ ⇒ false)
+      isPrepareStatements = properties.get(PREPARE_THRESHOLD).filter(_ == "0").forall(_ ⇒ false)
     )
   }
 
