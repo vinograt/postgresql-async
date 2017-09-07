@@ -126,8 +126,9 @@ class PostgreSQLConnection
 
     val stKey = query + "|" + values.map(value => encoderRegistry.kindOf(value)).mkString(",")
 
+    val statementId = if (configuration.isPrepareStatements) preparedStatementsCounter.incrementAndGet else -1
     val holder = this.parsedStatements.getOrElseUpdate(stKey,
-      new PreparedStatementHolder( query, preparedStatementsCounter.incrementAndGet ))
+      new PreparedStatementHolder( query, statementId ))
 
     if (holder.paramsCount != values.length) {
       this.clearQueryPromise

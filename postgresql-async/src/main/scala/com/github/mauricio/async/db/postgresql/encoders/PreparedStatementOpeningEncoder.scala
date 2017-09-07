@@ -38,7 +38,7 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
 
     val m = message.asInstanceOf[PreparedStatementOpeningMessage]
 
-    val statementIdBytes = m.statementId.toString.getBytes(charset)
+    val statementIdBytes = if (m.statementId >= 0) m.statementId.toString.getBytes(charset) else Array.emptyByteArray
     val columnCount = m.valueTypes.size
 
     val parseBuffer = Unpooled.buffer(1024)
