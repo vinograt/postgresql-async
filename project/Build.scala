@@ -49,7 +49,7 @@ object ProjectBuild extends Build {
 
 object Configuration {
 
-  val commonVersion = "0.2.22-SNAPSHOT"
+  val commonVersion = "0.2.22-IQ.1"
   val projectScalaVersion = "2.12.1"
   val specs2Version = "3.8.6"
 
@@ -96,11 +96,19 @@ object Configuration {
     },
     publishTo <<= version {
       v: String =>
-        val nexus = "https://oss.sonatype.org/"
+        val nexus = "http://nexus.mobbtech.com/repository/"
         if (v.trim.endsWith("SNAPSHOT"))
-          Some("snapshots" at nexus + "content/repositories/snapshots")
+          Some("snapshots" at nexus + "maven-snapshots")
         else
-          Some("releases" at nexus + "service/local/staging/deploy/maven2")
+          Some("releases" at nexus + "maven-releases")
+    },
+    resolvers += "IQOption Nexus Release" at "http://nexus.mobbtech.com/repository/maven-releases",
+    resolvers += "IQOption Nexus Snapshot" at "http://nexus.mobbtech.com/repository/maven-snapshots",
+    credentials += {
+      Seq("build.publish.host", "build.publish.user", "build.publish.password") map sys.props.get match {
+        case Seq(Some(host), Some(user), Some(pass)) ⇒ Credentials("Sonatype Nexus Repository Manager", host, user, pass)
+        case _                                       ⇒ Credentials(Path.userHome / ".ivy2" / ".credentials")
+      }
     },
     pomExtra := (
       <url>https://github.com/mauricio/postgresql-async</url>
