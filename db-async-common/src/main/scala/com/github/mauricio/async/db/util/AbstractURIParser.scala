@@ -112,7 +112,8 @@ abstract class AbstractURIParser {
       port = properties.get(PORT).map(_.toInt).getOrElse(DEFAULT.port),
       ssl = SSLConfiguration(properties),
       charset = charset,
-      currentSchema = properties.get(CURRENT_SCHEMA)
+      currentSchema = properties.get(CURRENT_SCHEMA),
+      isPrepareStatements = properties.get(PREPARE_THRESHOLD).filter(_ == "0").exists(_ ⇒ false)
     )
   }
 
@@ -173,5 +174,6 @@ object AbstractURIParser {
   val USERNAME = "user"
   val PASSWORD = "password"
   val CURRENT_SCHEMA = "currentSchema"
+  val PREPARE_THRESHOLD = "prepareThreshold"
 }
 
