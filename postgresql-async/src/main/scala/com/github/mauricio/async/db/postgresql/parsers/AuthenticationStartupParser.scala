@@ -23,7 +23,6 @@ import io.netty.buffer.ByteBuf
 object AuthenticationStartupParser extends MessageParser {
 
   val AuthenticationOk = 0
-  val AuthenticationKerberosV5 = 2
   val AuthenticationCleartextPassword = 3
   val AuthenticationMD5Password = 5
   val AuthenticationSCMCredential = 6
