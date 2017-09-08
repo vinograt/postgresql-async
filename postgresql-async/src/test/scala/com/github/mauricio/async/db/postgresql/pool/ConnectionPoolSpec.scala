@@ -18,10 +18,12 @@ package com.github.mauricio.async.db.postgresql.pool
 
 import java.util.UUID
 
+import com.github.mauricio.async.db.Configuration
 import com.github.mauricio.async.db.pool.{ConnectionPool, PoolConfiguration}
 import com.github.mauricio.async.db.postgresql.exceptions.GenericDatabaseException
-import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
+import com.github.mauricio.async.db.postgresql.{DatabaseTestHelper, PostgreSQLConnection}
 import org.specs2.mutable.Specification
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object ConnectionPoolSpec {
@@ -84,6 +86,41 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
 
     }
 
+    "execute unnamed prepared statements with pg-bouncer successfully" in {
+
+      if (System.getenv("PGBOUNCER") == "true") {
+
+        withUnnamedStatementsPools {
+          pool ⇒
+            executePreparedStatement(pool, "SELECT ?", Array(1))
+        } {
+          pool ⇒
+            executePreparedStatement(pool, "SELECT ?", Array(2))
+        }
+
+      } else {
+        skipped("not to be run without pg-bouncer")
+      }
+
+    }
+
+    "fail executing named prepared statements with pg-bouncer" in {
+
+      if (System.getenv("PGBOUNCER") == "true") {
+
+        withNamedStatementsPools {
+          pool ⇒
+            executePreparedStatement(pool, "SELECT ?", Array(1))
+        } {
+          pool ⇒
+            executePreparedStatement(pool, "SELECT ?", Array(2))
+        } must throwA[GenericDatabaseException]
+
+      } else {
+        skipped("not to be run without pg-bouncer")
+      }
+    }
+
   }
 
   def withPool[R]( fn : (ConnectionPool[PostgreSQLConnection]) => R ) : R = {
@@ -93,6 +130,38 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
       fn(pool)
     } finally {
       await(pool.disconnect)
+    }
+
+  }
+
+  val configWithPgBouncer: Configuration = defaultConfiguration.copy(port = 5432)
+
+  // it will work because one unnamed statement will rewrite another one inside of pg-bouncer session
+  def withUnnamedStatementsPools[R](fn1 : (ConnectionPool[PostgreSQLConnection]) => R)
+                                   (fn2 : (ConnectionPool[PostgreSQLConnection]) => R): (R, R) = {
+
+    val pool1 = new ConnectionPool( new PostgreSQLConnectionFactory(configWithPgBouncer.copy(isPrepareStatements = false)), PoolConfiguration.Default )
+    val pool2 = new ConnectionPool( new PostgreSQLConnectionFactory(configWithPgBouncer.copy(isPrepareStatements = false)), PoolConfiguration.Default )
+    try {
+      (fn1(pool1), fn2(pool2))
+    } finally {
+      await(pool1.disconnect)
+      await(pool2.disconnect)
+    }
+
+  }
+
+  // it will be failed due to identical prepared statements name inside of pg-bouncer session
+  def withNamedStatementsPools[R](fn1 : (ConnectionPool[PostgreSQLConnection]) => R)
+                                 (fn2 : (ConnectionPool[PostgreSQLConnection]) => R): (R, R) = {
+
+    val pool1 = new ConnectionPool( new PostgreSQLConnectionFactory(configWithPgBouncer.copy(isPrepareStatements = true)), PoolConfiguration.Default )
+    val pool2 = new ConnectionPool( new PostgreSQLConnectionFactory(configWithPgBouncer.copy(isPrepareStatements = true)), PoolConfiguration.Default )
+    try {
+      (fn1(pool1), fn2(pool2))
+    } finally {
+      await(pool1.disconnect)
+      await(pool2.disconnect)
     }
 
   }
