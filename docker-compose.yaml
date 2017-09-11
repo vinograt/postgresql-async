@@ -1,5 +1,16 @@
 version: '2'
 services:
+  pgbouncer:
+    image: brainsam/pgbouncer:latest
+    ports:
+      - "6432:6432"
+    links:
+      - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - POOL_MODE=transaction
+
   postgres:
     build: ./script/postgresql
     command: postgres -c ssl=on
