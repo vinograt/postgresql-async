@@ -81,6 +81,7 @@ class URLParserSpec extends Specification {
       configuration.host === "128.167.54.90"
       configuration.port === 9987
       configuration.currentSchema === Some("test")
+      configuration.isPrepareStatements === true
     }
 
     //========== postgresql:// ==============
@@ -294,6 +295,18 @@ class URLParserSpec extends Specification {
       configuration.port === 5432
 
       parseOrDie(connectionUri) must throwA[UnableToParseURLException]
+    }
+
+    "create a jdbc:postgresql connection with using unnamed prepared statements" in {
+      val connectionUri = "jdbc:postgresql://128.167.54.90:9987/my_database?prepareThreshold=0"
+
+      val configuration = parse(connectionUri)
+      configuration.username === "postgres"
+      configuration.password === None
+      configuration.database === Some("my_database")
+      configuration.host === "128.167.54.90"
+      configuration.port === 9987
+      configuration.isPrepareStatements === false
     }
 
   }
