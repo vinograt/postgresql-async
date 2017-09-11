@@ -98,8 +98,12 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
             executePreparedStatement(pool, "SELECT ?", Array(2))
         }
 
+        success("did work")
+
       } else {
+
         skipped("not to be run without pg-bouncer")
+
       }
 
     }
@@ -112,12 +116,17 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
           pool ⇒
             executePreparedStatement(pool, "SELECT ?", Array(1))
         } {
-          pool ⇒
+          pool ⇒ {
             executePreparedStatement(pool, "SELECT ?", Array(2))
+          }
         } must throwA[GenericDatabaseException]
 
+        success("an exception was successfully thrown")
+
       } else {
+
         skipped("not to be run without pg-bouncer")
+
       }
     }
 
@@ -134,7 +143,7 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
 
   }
 
-  val configWithPgBouncer: Configuration = defaultConfiguration.copy(port = 5432)
+  val configWithPgBouncer: Configuration = defaultConfiguration.copy(host = "0.0.0.0", port = 6432)
 
   // it will work because one unnamed statement will rewrite another one inside of pg-bouncer session
   def withUnnamedStatementsPools[R](fn1 : (ConnectionPool[PostgreSQLConnection]) => R)
