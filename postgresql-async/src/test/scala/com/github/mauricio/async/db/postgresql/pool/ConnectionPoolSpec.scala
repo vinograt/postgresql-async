@@ -93,9 +93,16 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
         withUnnamedStatementsPools {
           pool ⇒
             executePreparedStatement(pool, "SELECT ?", Array(1))
+            executePreparedStatement(pool, "SELECT ?, ?", Array(2, 3))
+            executePreparedStatement(pool, "SELECT ?, ?, ?", Array(2, 3, 4))
+            executePreparedStatement(pool, "SELECT ?, ?", Array(2, 3))
+            executePreparedStatement(pool, "SELECT ?", Array(1))
         } {
           pool ⇒
+            executePreparedStatement(pool, "SELECT ?, ?, ?, ?", Array(2, 4, 6, 8))
             executePreparedStatement(pool, "SELECT ?", Array(2))
+            executePreparedStatement(pool, "SELECT ?, ?, ?", Array(2, 4, 6))
+            executePreparedStatement(pool, "SELECT ?, ?", Array(2, 4))
         }
 
         success("did work")
