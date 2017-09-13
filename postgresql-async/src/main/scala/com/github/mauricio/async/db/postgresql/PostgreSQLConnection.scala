@@ -124,11 +124,10 @@ class PostgreSQLConnection
     val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
 
-    val stKey = query + "|" + values.map(value => encoderRegistry.kindOf(value)).mkString(",")
-
-    val statementId = if (configuration.isPrepareStatements) preparedStatementsCounter.incrementAndGet else -1
-    val holder = this.parsedStatements.getOrElseUpdate(stKey,
-      new PreparedStatementHolder( query, statementId ))
+    val holder = if (configuration.isPrepareStatements)
+      buildNamedPreparedStatementHolder(query, values)
+    else
+      buildUnnamedPreparedStatementHolder(query)
 
     if (holder.paramsCount != values.length) {
       this.clearQueryPromise
@@ -144,8 +143,20 @@ class PostgreSQLConnection
         holder.prepared = true
         new PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
       })
-    addTimeout(promise,configuration.queryTimeout)
+    addTimeout(promise, configuration.queryTimeout)
     promise.future
+  }
+
+  private def buildNamedPreparedStatementHolder(query: String, values: Seq[Any]): PreparedStatementHolder = {
+    val stKey = query + "|" + values.map(value => encoderRegistry.kindOf(value)).mkString(",")
+    val statementId = preparedStatementsCounter.incrementAndGet
+    this.parsedStatements.getOrElseUpdate(stKey, new PreparedStatementHolder(query, statementId))
+  }
+
+
+  private def buildUnnamedPreparedStatementHolder(query: String): PreparedStatementHolder = {
+    val statementId = -1
+    new PreparedStatementHolder(query, statementId)
   }
 
   override def onError( exception : Throwable ) {
