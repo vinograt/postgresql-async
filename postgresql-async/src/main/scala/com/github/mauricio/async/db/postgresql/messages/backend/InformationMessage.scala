@@ -53,7 +53,7 @@ object InformationMessage {
 abstract class InformationMessage(messageType: Byte, val fields: Map[Char, String])
   extends ServerMessage(messageType) {
 
-  def message: String = this.fields('M')
+  def message: String = this.fields.getOrElse('M', "--- no message ---")
 
   override def toString: String = {
     "%s(fields=%s)".format(this.getClass.getSimpleName, fields.map {
