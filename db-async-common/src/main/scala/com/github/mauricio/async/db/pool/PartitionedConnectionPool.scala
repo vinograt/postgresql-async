@@ -8,8 +8,9 @@ class PartitionedConnectionPool[T <: Connection](
     factory: ObjectFactory[T],
     configuration: PoolConfiguration,
     numberOfPartitions: Int,
-    executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext)
-    extends PartitionedAsyncObjectPool[T](factory, configuration, numberOfPartitions)
+    executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext,
+    connectionPoolListener: Option[ConnectionPoolListener] = None)
+    extends PartitionedAsyncObjectPool[T](factory, configuration, numberOfPartitions, connectionPoolListener)
     with Connection {
 
     def disconnect: Future[Connection] = if (this.isConnected) {

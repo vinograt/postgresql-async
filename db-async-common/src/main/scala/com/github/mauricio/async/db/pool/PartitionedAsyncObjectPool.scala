@@ -10,7 +10,8 @@ import scala.util.Failure
 class PartitionedAsyncObjectPool[T](
     factory: ObjectFactory[T],
     configuration: PoolConfiguration,
-    numberOfPartitions: Int)
+    numberOfPartitions: Int,
+    connectionPoolListener: Option[ConnectionPoolListener] = None)
     extends AsyncObjectPool[T] {
 
     import ExecutorServiceUtils.CachedExecutionContext
@@ -27,6 +28,7 @@ class PartitionedAsyncObjectPool[T](
         pool.take.andThen {
             case Success(conn) =>
                 checkouts.put(conn, pool)
+                connectionPoolListener.foreach(_.connectionTaken(available = availables.size, inUse = inUse.size, queued = queued.size))
             case Failure(_) =>
         }
     }
@@ -35,7 +37,10 @@ class PartitionedAsyncObjectPool[T](
         checkouts
             .remove(item)
             .giveBack(item)
-            .map(_ => this)
+            .map { _ =>
+                connectionPoolListener.foreach(_.connectionGivenBack(available = availables.size, inUse = inUse.size, queued = queued.size))
+                this
+            }
 
     def close =
         Future.sequence(pools.values.map(_.close)).map {
